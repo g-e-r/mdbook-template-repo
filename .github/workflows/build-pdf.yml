@@ -1,0 +1,79 @@
+name: Build PDF
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: python3.14
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        tags: true
+
+    - name: Install uv
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    - name: Cache uv
+      uses: actions/cache@v5
+      with:
+        path: ~/.cache/uv
+        key: ${{ runner.os }}-uv-${{ hashFiles('**/*.py') }}
+        restore-keys: |
+          ${{ runner.os }}-uv-
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache cargo
+      uses: actions/cache@v5
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          ~/.cargo/bin
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+
+    - name: Install mdbook
+      run: |
+        if ! command -v mdbook &> /dev/null; then
+          cargo install mdbook
+        fi
+
+    - name: Install mdbook-pdf
+      run: |
+        if ! command -v mdbook-pdf &> /dev/null; then
+          cargo install mdbook-pdf
+        fi
+
+    - name: Install mdbook-mermaid
+      run: |
+        if ! command -v mdbook-mermaid &> /dev/null; then
+          cargo install mdbook-mermaid
+        fi
+
+    - name: Install Chrome (for PDF rendering)
+      run: |
+        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable fonts-noto-cjk
+
+    - name: Build book
+      run: mdbook build
+
+    - name: Upload PDF artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: book-pdf
+        path: book/pdf/output.pdf

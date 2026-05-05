@@ -1,0 +1,41 @@
+[book]
+title = "mdBook テンプレート"
+authors = ["g-e-r"]
+language = "ja"
+src = "docs/"
+
+[preprocessor.mermaid-caption]
+command = "uv run mdbook-mermaid-caption.py"
+before = ["mermaid"]
+
+[preprocessor.mermaid]
+
+[preprocessor.toc-page]
+command = "uv run mdbook-toc-page.py"
+renderer = ["html", "pdf", "pdf-outline"]
+reviewer = ""
+approver = ""
+
+[output]
+
+[output.html]
+additional-js = ["mermaid.min.js", "mermaid-init.js"]
+
+[output.pdf]
+render-delay = 2000 # 2秒待機させる（ミリ秒指定）
+generate-document-outline = true
+display-header-footer = true
+scale = 1
+print-background = true
+paper-width = 8.27
+paper-height = 11.69
+margin-top = 0.4
+margin-bottom = 0.4
+margin-left = 0.25
+margin-right = 0.25
+page-ranges = ""
+ignore-invalid-page-ranges = false
+header-template = "<h3 style='font-size:8px; margin-left: 48%' class='title'></h3>"
+footer-template = "<p style='font-size:10px; margin-left: 48%'><span class='pageNumber'></span> / <span class='totalPages'></span></p>"
+prefer-css-page-size = true
+
